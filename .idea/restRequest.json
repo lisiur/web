@@ -1,0 +1,6 @@
+{
+  "uri": "http://0.0.0.0:19999/register",
+  "method": "GET",
+  "body": "",
+  "headers": {}
+}

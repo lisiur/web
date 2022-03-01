@@ -1,0 +1,7 @@
+db_host = "localhost"
+db_port = 5432
+db_name = "web"
+db_user = "postgres"
+db_password = "root"
+
+service_port = 19999
