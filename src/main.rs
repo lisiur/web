@@ -2,11 +2,11 @@
 mod db;
 mod domain;
 mod error;
-mod handler;
 mod middleware;
 mod prelude;
 mod response;
 mod result;
+mod service;
 mod utils;
 
 use actix_web::{web, App, HttpServer};
@@ -46,8 +46,8 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(db_pool.clone()))
-            .service(handler::oauth::register)
-            .service(handler::oauth::login)
+            .service(service::oauth::register)
+            .service(service::oauth::login)
     })
     .bind(("127.0.0.1", service_port))?
     .run()
