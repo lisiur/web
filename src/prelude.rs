@@ -1,5 +1,5 @@
 pub use crate::error::Error;
-pub use crate::response::JsonResponse;
+pub use crate::response::JsonResponseSchema;
 pub use crate::result::Result;
 pub use serde::{Deserialize, Serialize};
 pub use sqlx::{Pool, Postgres, Row};

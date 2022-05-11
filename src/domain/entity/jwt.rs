@@ -1,4 +1,5 @@
 use crate::result::Result;
+use crate::domain::repo::JwtRepo;
 use async_trait::async_trait;
 use chrono::{DateTime, Duration, Local, TimeZone, Utc};
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
@@ -57,15 +58,5 @@ impl Jwt {
         .map(|token| token.claims)
         .map_err(Into::into)
     }
-
-    /// 持久化 jwt
-    pub async fn save(&self, repo: &impl JwtRepository) -> Result<String> {
-        repo.save(self).await
-    }
 }
 
-#[async_trait]
-pub trait JwtRepository {
-    async fn check_valid(&self, token: &str) -> Result<bool>;
-    async fn save(&self, jwt: &Jwt) -> Result<String>;
-}

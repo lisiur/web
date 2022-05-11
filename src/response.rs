@@ -1,31 +1,52 @@
 use crate::result::Result;
 use actix_web::http::StatusCode;
+use actix_web::web::Json;
 use actix_web::{HttpRequest, HttpResponse, Responder};
 use serde::Serialize;
+use crate::error::Error;
 
-pub type JsonResponseResult<T> = Result<JsonResponse<T>>;
+pub struct Response;
+
+impl Response {
+    pub fn json<T: Serialize>(data: T) -> JsonResponse<T> {
+        Json(JsonResponseSchema::from_data(data))
+    }
+    pub fn json_ok<T: Serialize>(data: T) -> JsonResponseResult<T> {
+        Ok(Json(JsonResponseSchema::from_data(data)))
+    }
+    pub fn json_err(err: Error) -> JsonResponseResult<()> {
+        Err(err)
+    }
+}
+
+pub type JsonResponse<T> = Json<JsonResponseSchema<T>>;
+
+pub type JsonResponseResult<T> = Result<Json<JsonResponseSchema<T>>>;
 
 #[derive(Serialize)]
-pub struct JsonResponse<T: Serialize> {
+pub struct JsonResponseSchema<T: Serialize> {
     pub code: u16,
-    pub data: T,
+    pub data: Option<T>,
     pub message: Option<String>,
 }
 
-impl<T: Serialize> JsonResponse<T> {
-    pub fn ok(data: T) -> JsonResponseResult<T> {
-        Ok(Self {
+impl<T: Serialize> JsonResponseSchema<T> {
+    pub fn from_data(data: T) -> JsonResponseSchema<T> {
+        Self {
             code: 200,
-            data,
+            data: Some(data),
             message: None,
-        })
+        }
     }
 }
 
-impl<T: Serialize> Responder for JsonResponse<T> {
-    type Body = String;
-
-    fn respond_to(self, req: &HttpRequest) -> HttpResponse<Self::Body> {
-        HttpResponse::new(StatusCode::OK).set_body(serde_json::to_string(&self).unwrap())
+impl JsonResponseSchema<()> {
+    pub fn from_err(err: &Error) -> JsonResponseSchema<()> {
+        Self {
+            code: err.get_biz_code(),
+            data: None,
+            message: Some(err.to_string()),
+        }
     }
 }
+

@@ -1,4 +1,5 @@
-use crate::domain::entity::{User, UserRepository};
+use crate::domain::entity::User;
+use crate::domain::repo::UserRepo;
 use crate::error::Error;
 use crate::result::Result;
 use async_trait::async_trait;
@@ -6,10 +7,10 @@ use chrono::Local;
 use sqlx::{Acquire, Pool, Postgres};
 use uuid::Uuid;
 
-pub struct UserRepositoryDb<'a>(pub &'a Pool<Postgres>);
+pub struct UserDb<'a>(pub &'a Pool<Postgres>);
 
 #[async_trait]
-impl<'a> UserRepository for UserRepositoryDb<'a> {
+impl<'a> UserRepo for UserDb<'a> {
     async fn find_by_id(&self, id: &str) -> Result<Option<User>> {
         let row: Option<(Uuid, String, Option<String>, Option<String>)> =
             sqlx::query_as(r#"SELECT id, name, email, phone FROM users WHERE id = $1"#)
@@ -17,7 +18,7 @@ impl<'a> UserRepository for UserRepositoryDb<'a> {
                 .fetch_optional(self.0)
                 .await?;
         Ok(row.map(|row| User {
-            id: Some(row.0),
+            id: row.0,
             name: row.1,
             email: row.2,
             phone: row.3,
@@ -31,7 +32,7 @@ impl<'a> UserRepository for UserRepositoryDb<'a> {
                 .fetch_optional(self.0)
                 .await?;
         Ok(row.map(|(id, name, email, phone)| User {
-            id: Some(id),
+            id,
             name,
             email,
             phone,
