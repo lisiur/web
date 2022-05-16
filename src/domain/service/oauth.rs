@@ -1,4 +1,4 @@
-use crate::domain::{Jwt, JwtDb, JwtRepo, Oauth, OauthRepo, User, UserDb, UserRepo};
+use crate::domain::{Session, SessionDb, SessionRepo, Oauth, OauthRepo, User, UserDb, UserRepo};
 use crate::error::Error;
 use crate::prelude::DbPool;
 use crate::result::Result;
@@ -8,18 +8,18 @@ use uuid::Uuid;
 
 pub struct RegisterByPasswordService<'a> {
     user_repo: &'a dyn UserRepo,
-    jwt_repo: &'a dyn JwtRepo,
+    session_repo: &'a dyn SessionRepo,
 }
 
 impl<'a> RegisterByPasswordService<'a> {
-    pub fn new(user_repo: &'a dyn UserRepo, jwt_repo: &'a dyn JwtRepo) -> Self {
+    pub fn new(user_repo: &'a dyn UserRepo, session_repo: &'a dyn SessionRepo) -> Self {
         Self {
             user_repo,
-            jwt_repo,
+            session_repo,
         }
     }
 
-    pub async fn exec(&self, username: &str, password: &str, email: &str) -> Result<Jwt> {
+    pub async fn exec(&self, username: &str, password: &str, email: &str) -> Result<Session> {
         let mut user = User {
             name: username.to_string(),
             email: Some(email.to_string()),
@@ -39,33 +39,33 @@ impl<'a> RegisterByPasswordService<'a> {
         let user_id = self.user_repo.save(&user, &salt, &pw_digest).await?;
         user.id = user_id;
 
-        let jwt = Jwt::new(&user.id, &user.name, Duration::days(1));
-        self.jwt_repo.save(&jwt).await?;
+        let session = Session::new(&user.id, &user.name, Duration::days(1));
+        self.session_repo.save(&session).await?;
 
-        Ok(jwt)
+        Ok(session)
     }
 }
 
 pub struct LoginByPasswordService<'a> {
     user_repo: &'a dyn UserRepo,
-    jwt_repo: &'a dyn JwtRepo,
+    session_repo: &'a dyn SessionRepo,
     oauth_repo: &'a dyn OauthRepo,
 }
 
 impl<'a> LoginByPasswordService<'a> {
     pub fn new(
         user_repo: &'a dyn UserRepo,
-        jwt_repo: &'a dyn JwtRepo,
+        session_repo: &'a dyn SessionRepo,
         oauth_repo: &'a dyn OauthRepo,
     ) -> Self {
         Self {
             user_repo,
-            jwt_repo,
+            session_repo,
             oauth_repo,
         }
     }
 
-    pub async fn exec(&self, username: &str, password: &str) -> Result<Jwt> {
+    pub async fn exec(&self, username: &str, password: &str) -> Result<Session> {
         let user = self
             .user_repo
             .find_by_name(username)
@@ -82,11 +82,11 @@ impl<'a> LoginByPasswordService<'a> {
                 let salted_pw = password.to_string() + &salt;
                 let expected_pw_digest = sha1(&salted_pw);
                 if pw_digest.eq(&expected_pw_digest) {
-                    // 生成 jwt 并持久化
-                    let jwt = Jwt::new(&user.id, &user.name, Duration::days(1));
-                    self.jwt_repo.save(&jwt).await?;
+                    // 生成 session 并持久化
+                    let session = Session::new(&user.id, &user.name, Duration::days(1));
+                    self.session_repo.save(&session).await?;
 
-                    Ok(jwt)
+                    Ok(session)
                 } else {
                     Err(Error::AuthenticationFailedError)
                 }

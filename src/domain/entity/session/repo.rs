@@ -1,8 +1,8 @@
 use crate::result::Result;
-use super::entity::Jwt;
+use super::entity::Session;
 
 #[async_trait::async_trait]
-pub trait JwtRepo {
+pub trait SessionRepo {
     async fn check_valid(&self, token: &str) -> Result<bool>;
-    async fn save(&self, jwt: &Jwt) -> Result<String>;
+    async fn save(&self, session: &Session) -> Result<String>;
 }

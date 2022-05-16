@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Jwt {
+pub struct Session {
     pub user_id: Uuid,
     pub user_name: String,
     pub expired_at: i64,
@@ -20,8 +20,8 @@ pub struct Claims {
     pub exp: usize,
 }
 
-impl Jwt {
-    /// 创建 jwt
+impl Session {
+    /// 创建 session
     pub fn new(user_id: &Uuid, user_name: &str, expired_in: Duration) -> Self {
         let exp = Utc::now()
             .checked_add_signed(expired_in)
@@ -39,7 +39,7 @@ impl Jwt {
             &EncodingKey::from_secret("secret".as_ref()),
         )
         .unwrap();
-        Jwt {
+        Self {
             user_id: user_id.clone(),
             user_name: user_name.to_string(),
             expired_at: exp,
@@ -47,7 +47,7 @@ impl Jwt {
         }
     }
 
-    /// 解码 jwt
+    /// 解析 session
     pub fn try_decode(token: &str) -> Result<Claims> {
         decode::<Claims>(
             token,
@@ -58,4 +58,3 @@ impl Jwt {
         .map_err(Into::into)
     }
 }
-

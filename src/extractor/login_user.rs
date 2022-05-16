@@ -1,7 +1,7 @@
 use futures::future::{err, ok, Ready};
 use uuid::Uuid;
 
-use crate::domain::Jwt;
+use crate::domain::Session;
 use crate::error::Error;
 use crate::result::Result;
 use actix_web::FromRequest;
@@ -29,10 +29,10 @@ impl FromRequest for LoginUser {
                         if token.starts_with("bearer") {
                             token = &token[7..];
                         }
-                        match Jwt::try_decode(token) {
-                            Ok(jwt) => {
+                        match Session::try_decode(token) {
+                            Ok(session) => {
                                 ok(LoginUser {
-                                    id: jwt.user_id.clone()
+                                    id: session.user_id.clone()
                                 })
                             }
                             Err(error) => err(error),
