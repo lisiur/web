@@ -1,10 +1,9 @@
 use super::entity::User;
 use super::repo::UserRepo;
-use crate::error::Error;
 use crate::result::Result;
 use async_trait::async_trait;
 use chrono::Local;
-use sqlx::{Acquire, Pool, Postgres};
+use sqlx::{Pool, Postgres};
 use uuid::Uuid;
 
 #[derive(Clone)]

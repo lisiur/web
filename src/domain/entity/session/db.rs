@@ -1,6 +1,5 @@
 use super::entity::Session;
 use super::repo::SessionRepo;
-use crate::error::Error;
 use crate::result::Result;
 use async_trait::async_trait;
 use chrono::{Local, TimeZone};
@@ -40,5 +39,13 @@ impl SessionRepo for SessionDb {
                 .fetch_one(&self.0)
                 .await?;
         Ok(row.0.to_string())
+    }
+
+    async fn remove(&self, token: &str) -> Result<()> {
+        sqlx::query(r#"DELETE FROM sessions WHERE token = $1"#)
+            .bind(token)
+            .execute(&self.0)
+            .await?;
+        Ok(())
     }
 }

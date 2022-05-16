@@ -5,4 +5,5 @@ use super::entity::Session;
 pub trait SessionRepo {
     async fn check_valid(&self, token: &str) -> Result<bool>;
     async fn save(&self, session: &Session) -> Result<String>;
+    async fn remove(&self, token: &str) -> Result<()>;
 }

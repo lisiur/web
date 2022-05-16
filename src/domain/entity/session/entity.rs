@@ -1,6 +1,5 @@
 use crate::result::Result;
-use async_trait::async_trait;
-use chrono::{DateTime, Duration, Local, TimeZone, Utc};
+use chrono::{Duration, Utc};
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;

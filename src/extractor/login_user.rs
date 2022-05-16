@@ -7,7 +7,8 @@ use crate::result::Result;
 use actix_web::FromRequest;
 
 pub struct LoginUser {
-    id: Uuid,
+    pub id: Uuid,
+    pub token: String,
 }
 
 impl FromRequest for LoginUser {
@@ -18,7 +19,7 @@ impl FromRequest for LoginUser {
     #[inline]
     fn from_request(
         req: &actix_web::HttpRequest,
-        payload: &mut actix_web::dev::Payload,
+        _payload: &mut actix_web::dev::Payload,
     ) -> Self::Future {
         let authorization_header = req.headers().get("Authorization");
         match authorization_header {
@@ -32,7 +33,8 @@ impl FromRequest for LoginUser {
                         match Session::try_decode(token) {
                             Ok(session) => {
                                 ok(LoginUser {
-                                    id: session.user_id.clone()
+                                    id: session.user_id.clone(),
+                                    token: token.to_string(),
                                 })
                             }
                             Err(error) => err(error),

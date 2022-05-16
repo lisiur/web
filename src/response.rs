@@ -1,7 +1,5 @@
 use crate::result::Result;
-use actix_web::http::StatusCode;
 use actix_web::web::Json;
-use actix_web::{HttpRequest, HttpResponse, Responder};
 use serde::Serialize;
 use crate::error::Error;
 
@@ -14,6 +12,7 @@ impl Response {
     pub fn json_ok<T: Serialize>(data: T) -> JsonResponseResult<T> {
         Ok(Json(JsonResponseSchema::from_data(data)))
     }
+    #[allow(dead_code)]
     pub fn json_err(err: Error) -> JsonResponseResult<()> {
         Err(err)
     }
@@ -21,7 +20,7 @@ impl Response {
 
 pub type JsonResponse<T> = Json<JsonResponseSchema<T>>;
 
-pub type JsonResponseResult<T> = Result<Json<JsonResponseSchema<T>>>;
+type JsonResponseResult<T> = Result<Json<JsonResponseSchema<T>>>;
 
 #[derive(Serialize)]
 pub struct JsonResponseSchema<T: Serialize> {

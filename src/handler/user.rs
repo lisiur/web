@@ -1,5 +1,5 @@
+use crate::domain::{UserDb, UserInfoService};
 use crate::prelude::*;
-use crate::domain::UserDb;
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -12,8 +12,16 @@ pub struct UserDetail {
 
 #[get("/user/detail")]
 pub async fn detail(
-    pool: Data<DbPool>,
-    login_user: LoginUser
-    ) -> Result<JsonResponse<UserDetail>> {
-    todo!()
+    user_repo: Db<UserDb>,
+    login_user: LoginUser,
+) -> Result<JsonResponse<UserDetail>> {
+    let user = UserInfoService::new(&*user_repo)
+        .exec(&login_user.id)
+        .await?;
+    Response::json_ok(UserDetail {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+    })
 }

@@ -16,11 +16,14 @@ pub enum Error {
     AuthenticationFailedError,
     #[error("用户名已存在")]
     UserNameExistsError,
+    #[error("用户不存在")]
+    UserNotExistsError,
 }
 
 impl Error {
     pub fn get_status_code(&self) -> StatusCode {
         match self {
+            Error::AuthenticationFailedError => StatusCode::UNAUTHORIZED,
             Error::RequestError(_) => StatusCode::BAD_REQUEST,
             Error::UserNameExistsError => StatusCode::UNPROCESSABLE_ENTITY,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
@@ -29,9 +32,10 @@ impl Error {
 
     pub fn get_biz_code(&self) -> u16 {
         match self {
-            Error::RequestError(_) => 400,
-            Error::UserNameExistsError => 4_001,
-            _ => 5_000,
+            Error::AuthenticationFailedError => 601,
+            Error::RequestError(_) => 602,
+            Error::UserNameExistsError => 603,
+            _ => 600,
         }
     }
 }

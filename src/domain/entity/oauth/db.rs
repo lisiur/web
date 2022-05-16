@@ -1,6 +1,5 @@
 use super::entity::Oauth;
 use super::repo::OauthRepo;
-use crate::error::Error;
 use crate::prelude::DbPool;
 use crate::result::Result;
 use uuid::Uuid;

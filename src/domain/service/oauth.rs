@@ -1,10 +1,8 @@
-use crate::domain::{Session, SessionDb, SessionRepo, Oauth, OauthRepo, User, UserDb, UserRepo};
+use crate::domain::{Oauth, OauthRepo, Session, SessionRepo, User, UserRepo};
 use crate::error::Error;
-use crate::prelude::DbPool;
 use crate::result::Result;
 use crate::utils::{random_str, sha1};
 use chrono::Duration;
-use uuid::Uuid;
 
 pub struct RegisterByPasswordService<'a> {
     user_repo: &'a dyn UserRepo,
@@ -93,5 +91,20 @@ impl<'a> LoginByPasswordService<'a> {
             }
             _ => Err(Error::AuthenticationFailedError),
         }
+    }
+}
+
+pub struct LogoutService<'a> {
+    session_repo: &'a dyn SessionRepo,
+}
+
+impl<'a> LogoutService<'a> {
+    pub fn new(session_repo: &'a dyn SessionRepo) -> Self {
+        Self { session_repo }
+    }
+
+    pub async fn exec(&self, token: &str) -> Result<()> {
+        self.session_repo.remove(token).await?;
+        Ok(())
     }
 }

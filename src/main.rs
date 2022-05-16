@@ -1,20 +1,17 @@
-#![allow(unused)]
+mod conf;
 mod domain;
 mod error;
+mod extractor;
 mod handler;
+mod info;
 mod middleware;
 mod prelude;
 mod response;
 mod result;
 mod utils;
-mod conf;
-mod info;
-mod extractor;
 
 use actix_web::{web, App, HttpServer};
-use config::Config;
 use sqlx::postgres::PgPoolOptions;
-use std::net::SocketAddr;
 use std::env;
 
 #[actix_web::main]
@@ -44,7 +41,11 @@ async fn main() -> std::io::Result<()> {
     let service_host = conf::SERVICE::HOST();
     let service_port = conf::SERVICE::PORT();
     tracing::info!("database connected => {}", db_url);
-    tracing::info!("server started     => http://{}:{}", service_host, service_port);
+    tracing::info!(
+        "server started     => http://{}:{}",
+        service_host,
+        service_port
+    );
 
     HttpServer::new(move || {
         App::new()
@@ -66,6 +67,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(db_pool.clone()))
             .service(handler::oauth::register)
             .service(handler::oauth::login)
+            .service(handler::oauth::logout)
     })
     .bind((service_host, service_port))?
     .run()

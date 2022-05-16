@@ -1,10 +1,11 @@
 use crate::result::Result;
 use crate::{error::Error, prelude::DbPool};
 use actix_web::{web::Data, FromRequest};
-use futures::future::{err, ok, Ready};
+use futures::future::{ok, Ready};
 use sqlx::{Pool, Postgres};
 use std::ops::Deref;
 
+#[derive(Clone)]
 pub struct Db<T: From<Pool<Postgres>>>(pub T);
 
 impl<T: From<Pool<Postgres>>> Deref for Db<T> {
@@ -22,7 +23,7 @@ impl<T: From<Pool<Postgres>>> FromRequest for Db<T> {
 
     fn from_request(
         req: &actix_web::HttpRequest,
-        payload: &mut actix_web::dev::Payload,
+        _payload: &mut actix_web::dev::Payload,
     ) -> Self::Future {
         match req.app_data::<Data<DbPool>>() {
             Some(pool) => {
