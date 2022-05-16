@@ -1,4 +1,4 @@
-use crate::domain::entity::User;
+use super::entity::User;
 use crate::result::Result;
 use uuid::Uuid;
 

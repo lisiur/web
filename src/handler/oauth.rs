@@ -1,6 +1,6 @@
-use crate::domain::db::{JwtDb, OauthDb, UserDb};
-use crate::domain::entity::{Jwt, Oauth, User};
-use crate::domain::service::oauth::{LoginByPasswordService, RegisterByPasswordService};
+use crate::domain::{Jwt, Oauth, User};
+use crate::domain::{JwtDb, OauthDb, UserDb};
+use crate::domain::{LoginByPasswordService, RegisterByPasswordService};
 use crate::prelude::*;
 use crate::response::{JsonResponse, Response};
 
@@ -30,10 +30,11 @@ pub struct UserToken {
 pub async fn register(
     pool: Data<DbPool>,
     params: Json<RegisterParams>,
+    user_repo: Db<UserDb>,
+    jwt_repo: Db<JwtDb>,
 ) -> Result<JsonResponse<UserToken>> {
-    let user_repo = UserDb(&pool);
-    let jwt_repo = JwtDb(&pool);
-    let jwt = RegisterByPasswordService::new(&user_repo, &jwt_repo)
+    let pool = (**pool).clone();
+    let jwt = RegisterByPasswordService::new(&*user_repo, &*jwt_repo)
         .exec(&params.username, &params.password, &params.email)
         .await?;
 
@@ -60,11 +61,12 @@ pub struct LoginParams {
 pub async fn login(
     pool: Data<DbPool>,
     params: Json<LoginParams>,
+    user_repo: Db<UserDb>,
+    jwt_repo: Db<JwtDb>,
+    oauth_repo: Db<OauthDb>,
 ) -> Result<JsonResponse<UserToken>> {
-    let user_repo = UserDb(&pool);
-    let oauth_repo = OauthDb(&pool);
-    let jwt_repo = JwtDb(&pool);
-    let jwt = LoginByPasswordService::new(&user_repo, &jwt_repo, &oauth_repo)
+    let pool = (**pool).clone();
+    let jwt = LoginByPasswordService::new(&*user_repo, &*jwt_repo, &*oauth_repo)
         .exec(&params.username, &params.password)
         .await?;
 

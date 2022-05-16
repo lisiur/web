@@ -1,5 +1,5 @@
-use crate::domain::entity::User;
-use crate::domain::repo::UserRepo;
+use super::entity::User;
+use super::repo::UserRepo;
 use crate::error::Error;
 use crate::result::Result;
 use async_trait::async_trait;
@@ -7,15 +7,22 @@ use chrono::Local;
 use sqlx::{Acquire, Pool, Postgres};
 use uuid::Uuid;
 
-pub struct UserDb<'a>(pub &'a Pool<Postgres>);
+#[derive(Clone)]
+pub struct UserDb(pub Pool<Postgres>);
+
+impl From<Pool<Postgres>> for UserDb {
+    fn from(pool: Pool<Postgres>) -> Self {
+        UserDb(pool)
+    }
+}
 
 #[async_trait]
-impl<'a> UserRepo for UserDb<'a> {
+impl UserRepo for UserDb {
     async fn find_by_id(&self, id: &str) -> Result<Option<User>> {
         let row: Option<(Uuid, String, Option<String>, Option<String>)> =
             sqlx::query_as(r#"SELECT id, name, email, phone FROM users WHERE id = $1"#)
                 .bind(id)
-                .fetch_optional(self.0)
+                .fetch_optional(&self.0)
                 .await?;
         Ok(row.map(|row| User {
             id: row.0,
@@ -29,7 +36,7 @@ impl<'a> UserRepo for UserDb<'a> {
         let row: Option<(Uuid, String, Option<String>, Option<String>)> =
             sqlx::query_as(r#"SELECT id, name, email, phone FROM users WHERE name = $1"#)
                 .bind(name)
-                .fetch_optional(self.0)
+                .fetch_optional(&self.0)
                 .await?;
         Ok(row.map(|(id, name, email, phone)| User {
             id,

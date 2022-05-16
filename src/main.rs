@@ -9,6 +9,7 @@ mod result;
 mod utils;
 mod conf;
 mod info;
+mod extractor;
 
 use actix_web::{web, App, HttpServer};
 use config::Config;

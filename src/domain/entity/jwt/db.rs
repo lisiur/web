@@ -1,5 +1,5 @@
-use crate::domain::entity::Jwt;
-use crate::domain::repo::JwtRepo;
+use super::entity::Jwt;
+use super::repo::JwtRepo;
 use crate::error::Error;
 use crate::result::Result;
 use async_trait::async_trait;
@@ -7,14 +7,20 @@ use chrono::{Local, TimeZone};
 use sqlx::{Pool, Postgres};
 use uuid::Uuid;
 
-pub struct JwtDb<'a>(pub &'a Pool<Postgres>);
+pub struct JwtDb(pub Pool<Postgres>);
+
+impl From<Pool<Postgres>> for JwtDb {
+    fn from(pool: Pool<Postgres>) -> Self {
+        JwtDb(pool)
+    }
+}
 
 #[async_trait]
-impl<'a> JwtRepo for JwtDb<'a> {
+impl JwtRepo for JwtDb {
     async fn check_valid(&self, token: &str) -> Result<bool> {
         let row: (Option<bool>,) = sqlx::query_as(r#"SELECT invalid from sessions WHERE jwt = $1"#)
             .bind(token)
-            .fetch_one(self.0)
+            .fetch_one(&self.0)
             .await?;
         match row.0 {
             Some(true) => Ok(true),
@@ -31,7 +37,7 @@ impl<'a> JwtRepo for JwtDb<'a> {
                 .bind(&jwt.token)
                 .bind(&expired_at)
                 .bind(&now)
-                .fetch_one(self.0)
+                .fetch_one(&self.0)
                 .await?;
         Ok(row.0.to_string())
     }

@@ -1,2 +1,5 @@
-pub mod oauth;
-pub mod user;
+mod oauth;
+mod user;
+
+pub use oauth::*;
+pub use user::*;

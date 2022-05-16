@@ -1,5 +1,4 @@
 use crate::result::Result;
-use crate::domain::repo::JwtRepo;
 use async_trait::async_trait;
 use chrono::{DateTime, Duration, Local, TimeZone, Utc};
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
@@ -16,9 +15,9 @@ pub struct Jwt {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Claims {
-    user_id: Uuid,
-    user_name: String,
-    exp: usize,
+    pub user_id: Uuid,
+    pub user_name: String,
+    pub exp: usize,
 }
 
 impl Jwt {

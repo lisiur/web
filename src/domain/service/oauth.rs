@@ -1,9 +1,7 @@
-use crate::domain::entity::{Jwt, User, Oauth};
-use crate::domain::repo::{JwtRepo, UserRepo, OauthRepo};
-use crate::domain::db::{JwtDb, UserDb};
+use crate::domain::{Jwt, JwtDb, JwtRepo, Oauth, OauthRepo, User, UserDb, UserRepo};
+use crate::error::Error;
 use crate::prelude::DbPool;
 use crate::result::Result;
-use crate::error::Error;
 use crate::utils::{random_str, sha1};
 use chrono::Duration;
 use uuid::Uuid;
@@ -13,7 +11,7 @@ pub struct RegisterByPasswordService<'a> {
     jwt_repo: &'a dyn JwtRepo,
 }
 
-impl <'a> RegisterByPasswordService<'a> {
+impl<'a> RegisterByPasswordService<'a> {
     pub fn new(user_repo: &'a dyn UserRepo, jwt_repo: &'a dyn JwtRepo) -> Self {
         Self {
             user_repo,
@@ -54,8 +52,12 @@ pub struct LoginByPasswordService<'a> {
     oauth_repo: &'a dyn OauthRepo,
 }
 
-impl <'a> LoginByPasswordService<'a> {
-    pub fn new(user_repo: &'a dyn UserRepo, jwt_repo: &'a dyn JwtRepo, oauth_repo: &'a dyn OauthRepo) -> Self {
+impl<'a> LoginByPasswordService<'a> {
+    pub fn new(
+        user_repo: &'a dyn UserRepo,
+        jwt_repo: &'a dyn JwtRepo,
+        oauth_repo: &'a dyn OauthRepo,
+    ) -> Self {
         Self {
             user_repo,
             jwt_repo,
@@ -64,12 +66,14 @@ impl <'a> LoginByPasswordService<'a> {
     }
 
     pub async fn exec(&self, username: &str, password: &str) -> Result<Jwt> {
-        let user = self.user_repo
+        let user = self
+            .user_repo
             .find_by_name(username)
             .await?
             .ok_or(Error::AuthenticationFailedError)?;
 
-        let oauth = self.oauth_repo
+        let oauth = self
+            .oauth_repo
             .find(&user.id, "password")
             .await?
             .ok_or(Error::AuthenticationFailedError)?;

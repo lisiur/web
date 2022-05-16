@@ -1,4 +1,4 @@
-log_level = "debug"
+log_level = "info"
 
 db_host = "localhost"
 db_port = 5432

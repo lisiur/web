@@ -1,5 +1,5 @@
 use crate::result::Result;
-use crate::domain::entity::Jwt;
+use super::entity::Jwt;
 
 #[async_trait::async_trait]
 pub trait JwtRepo {

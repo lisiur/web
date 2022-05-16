@@ -1,4 +1,4 @@
-use crate::domain::entity::Oauth;
+use super::entity::Oauth;
 use crate::result::Result;
 use uuid::Uuid;
 
